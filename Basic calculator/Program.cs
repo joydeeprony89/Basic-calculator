@@ -8,46 +8,54 @@ namespace Basic_calculator
     static void Main(string[] args)
     {
       Program p = new Program();
-      string s = "3*2*2";
+      string s = "(1+(4+5+2)-3)+(6+8)";
       Console.WriteLine(p.Calculate(s));
     }
     public int Calculate(string s)
     {
-      int currentNumber = 0;
-      char opert = '+';
       Stack<int> stack = new Stack<int>();
-      var charArray = s.ToCharArray();
-      for (int i = 0; i < charArray.Length; i++)
+      int result = 0;
+      int number = 0;
+      int sign = 1;
+      for (int i = 0; i < s.Length; i++)
       {
-        char c = charArray[i];
+        char c = s[i];
         if (char.IsDigit(c))
         {
-          currentNumber = 10 * currentNumber + c - '0';
+          number = 10 * number + (c - '0');
         }
-
-        if ((!char.IsDigit(c) && c != ' ') || i == charArray.Length - 1)
+        else if (c == '+')
         {
+          result += sign * number;
+          number = 0;
+          sign = 1;
+        }
+        else if (c == '-')
+        {
+          result += sign * number;
+          number = 0;
+          sign = -1;
+        }
+        else if (c == '(')
+        {
+          //we push the result first, then sign;
+          stack.Push(result);
+          stack.Push(sign);
+          //reset the sign and result for the value in the parenthesis
+          sign = 1;
+          result = 0;
+        }
+        else if (c == ')')
+        {
+          result += sign * number;
+          number = 0;
+          result *= stack.Pop();    //stack.pop() is the sign before the parenthesis
+          result += stack.Pop();   //stack.pop() now is the result calculated before the parenthesis
 
-          if (opert == '+')
-            stack.Push(currentNumber);
-          else if (opert == '-')
-            stack.Push(-currentNumber);
-          else if (opert == '*')
-            stack.Push(stack.Pop()*currentNumber);
-          else if (opert == '/')
-            stack.Push(stack.Pop() / currentNumber);
-          opert = c;
-          currentNumber = 0;
         }
       }
-
-      int sum = 0;
-      while (stack.Count > 0)
-      {
-        sum += stack.Pop();
-      }
-
-      return sum;
+      if (number != 0) result += sign * number;
+      return result;
     }
   }
 }
